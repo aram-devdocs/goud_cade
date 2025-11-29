@@ -26,6 +26,9 @@ importers:
       '@repo/hooks':
         specifier: workspace:*
         version: link:../../packages/hooks
+      '@repo/input':
+        specifier: workspace:*
+        version: link:../../packages/input
       '@repo/scene':
         specifier: workspace:*
         version: link:../../packages/scene
@@ -77,6 +80,10 @@ importers:
         version: 8.48.0(eslint@9.39.1(jiti@1.21.7))(typescript@5.9.3)
 
   packages/games:
+    dependencies:
+      '@repo/input':
+        specifier: workspace:*
+        version: link:../input
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
@@ -128,6 +135,34 @@ importers:
         specifier: ^8.48.0
         version: 8.48.0(eslint@9.39.1(jiti@1.21.7))(typescript@5.9.3)
 
+  packages/input:
+    dependencies:
+      zustand:
+        specifier: ^5.0.0
+        version: 5.0.8(@types/react@18.3.27)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.1
+        version: 9.39.1
+      '@repo/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/react':
+        specifier: ^18.2.0
+        version: 18.3.27
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.1(jiti@1.21.7)
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.48.0
+        version: 8.48.0(eslint@9.39.1(jiti@1.21.7))(typescript@5.9.3)
+
   packages/scene:
     dependencies:
       '@react-three/drei':
@@ -139,6 +174,9 @@ importers:
       '@repo/hooks':
         specifier: workspace:*
         version: link:../hooks
+      '@repo/input':
+        specifier: workspace:*
+        version: link:../input
       three:
         specifier: ^0.160.0
         version: 0.160.1
@@ -178,6 +216,9 @@ importers:
       '@repo/hooks':
         specifier: workspace:*
         version: link:../hooks
+      '@repo/input':
+        specifier: workspace:*
+        version: link:../input
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1

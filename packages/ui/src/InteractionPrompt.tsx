@@ -1,12 +1,39 @@
 'use client';
 
 import { useGameStore } from '@repo/hooks';
+import { useInputStore } from '@repo/input';
 
 export function InteractionPrompt() {
   const nearCabinet = useGameStore((state) => state.nearCabinet);
   const mode = useGameStore((state) => state.mode);
+  const isTouchDevice = useInputStore((state) => state.isTouchDevice);
+  const activeSource = useInputStore((state) => state.activeSource);
 
   if (!nearCabinet || mode !== 'walking') return null;
+
+  // Determine which prompt to show based on input source
+  const getInteractPrompt = () => {
+    if (isTouchDevice && (activeSource === 'touch' || activeSource === null)) {
+      return (
+        <>
+          TAP <span style={{ color: '#00ffff' }}>E</span> TO PLAY
+        </>
+      );
+    }
+    if (activeSource === 'gamepad') {
+      return (
+        <>
+          PRESS <span style={{ color: '#00ff00' }}>A</span> TO PLAY
+        </>
+      );
+    }
+    // Default keyboard
+    return (
+      <>
+        PRESS <span style={{ color: '#ffff00' }}>E</span> TO PLAY
+      </>
+    );
+  };
 
   return (
     <div
@@ -31,9 +58,7 @@ export function InteractionPrompt() {
       <div style={{ marginBottom: '8px', color: '#ffffff' }}>
         {nearCabinet.game.toUpperCase()}
       </div>
-      <div>
-        PRESS <span style={{ color: '#ffff00' }}>E</span> TO PLAY
-      </div>
+      <div>{getInteractPrompt()}</div>
       <style>{`
         @keyframes pulse {
           0%, 100% { opacity: 1; }
@@ -43,4 +68,3 @@ export function InteractionPrompt() {
     </div>
   );
 }
-

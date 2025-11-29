@@ -3,13 +3,14 @@
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useGameStore, useArcadeAudio } from '@repo/hooks';
+import { useInputStore, TouchControls } from '@repo/input';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
 import { SnakeGame } from '@repo/games';
 
 // Dynamically import the 3D scene to avoid SSR issues with Three.js
 const Game = dynamic(
   () => import('@repo/scene').then((mod) => mod.Game),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="loading-screen">
@@ -23,8 +24,14 @@ const Game = dynamic(
 export default function ArcadePage() {
   const mode = useGameStore((state) => state.mode);
   const activeCabinet = useGameStore((state) => state.activeCabinet);
+  const stopPlaying = useGameStore((state) => state.stopPlaying);
   const [gameCanvases, setGameCanvases] = useState<Record<string, HTMLCanvasElement | null>>({});
   const [score, setScore] = useState(0);
+
+  // Get input source info for control hints
+  const isTouchDevice = useInputStore((state) => state.isTouchDevice);
+  const activeSource = useInputStore((state) => state.activeSource);
+  const hasGamepad = useInputStore((state) => state.hasGamepad);
 
   // Initialize arcade audio
   const { playSound } = useArcadeAudio(true);
@@ -37,15 +44,75 @@ export default function ArcadePage() {
   // Check if snake game is active
   const isSnakeActive = mode === 'playing' && activeCabinet?.id === 'snake-1';
 
+  // Get control hints based on input source
+  const getWalkingControls = () => {
+    if (activeSource === 'gamepad' || hasGamepad) {
+      return (
+        <>
+          <div>Left Stick - Move</div>
+          <div>Right Stick - Look</div>
+        </>
+      );
+    }
+    if (isTouchDevice && (activeSource === 'touch' || activeSource === null)) {
+      return (
+        <>
+          <div>Joystick - Move</div>
+          <div>Drag - Look around</div>
+        </>
+      );
+    }
+    return (
+      <>
+        <div>WASD - Move</div>
+        <div>Mouse - Look around</div>
+      </>
+    );
+  };
+
+  const getPlayingControls = () => {
+    if (activeSource === 'gamepad' || hasGamepad) {
+      return (
+        <>
+          <div>D-Pad/Stick - Control Snake</div>
+          <div>B - Exit Game</div>
+        </>
+      );
+    }
+    if (isTouchDevice && (activeSource === 'touch' || activeSource === null)) {
+      return (
+        <>
+          <div>D-Pad - Control Snake</div>
+          <div>X Button - Exit</div>
+        </>
+      );
+    }
+    return (
+      <>
+        <div>Arrow Keys - Control Snake</div>
+        <div>ESC - Exit Game</div>
+      </>
+    );
+  };
+
+  // Determine if we should show text hints (hide on touch devices using touch)
+  const showTextHints = !(isTouchDevice && (activeSource === 'touch' || activeSource === null));
+
   return (
     <main className="game-container w-full h-screen relative">
       {/* 3D Scene */}
       <Game gameCanvases={gameCanvases} />
-      
+
       {/* UI Overlays */}
       <InteractionPrompt />
       <GameOverlay score={score} />
-      
+
+      {/* Touch Controls */}
+      <TouchControls
+        mode={mode}
+        onExit={stopPlaying}
+      />
+
       {/* Hidden game canvases for texture rendering */}
       <SnakeGame
         isActive={isSnakeActive}
@@ -53,28 +120,25 @@ export default function ArcadePage() {
         onScoreChange={setScore}
         playSound={playSound}
       />
-      
-      {/* Controls hint */}
-      {mode === 'walking' && (
-        <div 
+
+      {/* Controls hint - only show on non-touch or when using keyboard/gamepad */}
+      {mode === 'walking' && showTextHints && (
+        <div
           className="fixed bottom-4 left-4 text-xs font-arcade text-white/50 space-y-1"
           style={{ fontFamily: '"Press Start 2P", monospace' }}
         >
-          <div>WASD - Move</div>
-          <div>Mouse - Look around</div>
+          {getWalkingControls()}
         </div>
       )}
-      
-      {mode === 'playing' && (
-        <div 
+
+      {mode === 'playing' && showTextHints && (
+        <div
           className="fixed bottom-4 left-4 text-xs text-white/50 space-y-1"
           style={{ fontFamily: '"Press Start 2P", monospace' }}
         >
-          <div>Arrow Keys - Control Snake</div>
-          <div>ESC - Exit Game</div>
+          {getPlayingControls()}
         </div>
       )}
     </main>
   );
 }
-

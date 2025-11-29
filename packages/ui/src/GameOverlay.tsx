@@ -1,6 +1,7 @@
 'use client';
 
 import { useGameStore } from '@repo/hooks';
+import { useInputStore } from '@repo/input';
 
 interface GameOverlayProps {
   score?: number;
@@ -11,12 +12,25 @@ export function GameOverlay({ score = 0, onExit }: GameOverlayProps) {
   const mode = useGameStore((state) => state.mode);
   const activeCabinet = useGameStore((state) => state.activeCabinet);
   const stopPlaying = useGameStore((state) => state.stopPlaying);
+  const isTouchDevice = useInputStore((state) => state.isTouchDevice);
+  const activeSource = useInputStore((state) => state.activeSource);
 
   if (mode !== 'playing' || !activeCabinet) return null;
 
   const handleExit = () => {
     stopPlaying();
     onExit?.();
+  };
+
+  // Get exit button text based on input source
+  const getExitText = () => {
+    if (isTouchDevice && (activeSource === 'touch' || activeSource === null)) {
+      return 'TAP X TO EXIT';
+    }
+    if (activeSource === 'gamepad') {
+      return 'B TO EXIT';
+    }
+    return 'ESC TO EXIT';
   };
 
   return (
@@ -55,9 +69,8 @@ export function GameOverlay({ score = 0, onExit }: GameOverlayProps) {
           fontSize: '10px',
         }}
       >
-        ESC TO EXIT
+        {getExitText()}
       </button>
     </div>
   );
 }
-

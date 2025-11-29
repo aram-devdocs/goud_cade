@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/hooks": "workspace:*"
+    "@repo/hooks": "workspace:*",
+    "@repo/input": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

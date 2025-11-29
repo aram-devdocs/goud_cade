@@ -15,6 +15,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@repo/input": "workspace:*"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@repo/tsconfig": "workspace:*",

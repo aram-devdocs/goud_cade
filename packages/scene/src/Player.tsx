@@ -1,10 +1,11 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useKeyboardControls } from '@react-three/drei';
-import { Mesh, Vector3 } from 'three';
+import type { Mesh } from 'three';
+import { Vector3 } from 'three';
 import { useGameStore, type CabinetInfo } from '@repo/hooks';
+import { useInputStore } from '@repo/input';
 
 const MOVE_SPEED = 5;
 const ROTATION_SPEED = 3;
@@ -17,73 +18,66 @@ interface PlayerProps {
 
 export function Player({ cabinets, interactionDistance = 2.5 }: PlayerProps) {
   const meshRef = useRef<Mesh>(null);
-  const velocityRef = useRef(new Vector3());
-  
+
   const mode = useGameStore((state) => state.mode);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   const setPlayerRotation = useGameStore((state) => state.setPlayerRotation);
-  const setNearCabinet = useGameStore((state) => state.nearCabinet);
   const updateNearCabinet = useGameStore((state) => state.setNearCabinet);
   const startPlaying = useGameStore((state) => state.startPlaying);
-  
-  // Get keyboard controls
-  const [subscribeKeys, getKeys] = useKeyboardControls();
 
-  // Handle E key press for interaction
-  useEffect(() => {
-    const unsubscribe = subscribeKeys(
-      (state) => state.interact,
-      (pressed) => {
-        if (pressed && mode === 'walking') {
-          const nearCab = useGameStore.getState().nearCabinet;
-          if (nearCab) {
-            startPlaying(nearCab);
-          }
-        }
+  // Get input from unified input store
+  const movement = useInputStore((state) => state.movement);
+  const interact = useInputStore((state) => state.interact);
+
+  // Handle interact button press for interaction
+  const handleInteract = useCallback(() => {
+    if (mode === 'walking') {
+      const nearCab = useGameStore.getState().nearCabinet;
+      if (nearCab) {
+        startPlaying(nearCab);
       }
-    );
-    return () => unsubscribe();
-  }, [subscribeKeys, mode, startPlaying]);
+    }
+  }, [mode, startPlaying]);
+
+  // Watch for interact button press
+  useEffect(() => {
+    if (interact && mode === 'walking') {
+      handleInteract();
+    }
+  }, [interact, mode, handleInteract]);
 
   useFrame((state, delta) => {
     if (!meshRef.current || mode !== 'walking') return;
 
-    const { forward, backward, left, right } = getKeys();
-    
-    // Get current rotation
-    const currentRotation = meshRef.current.rotation.y;
-    
-    // Rotation
-    if (left) {
-      meshRef.current.rotation.y += ROTATION_SPEED * delta;
+    // Movement from unified input
+    const moveX = movement.x; // -1 to 1 (left/right for rotation)
+    const moveY = movement.y; // -1 to 1 (forward/backward)
+
+    // Rotation (left/right controls rotation)
+    if (moveX !== 0) {
+      meshRef.current.rotation.y -= moveX * ROTATION_SPEED * delta;
     }
-    if (right) {
-      meshRef.current.rotation.y -= ROTATION_SPEED * delta;
-    }
-    
+
     // Movement direction based on rotation
     const direction = new Vector3();
-    if (forward) {
-      direction.z -= 1;
+    if (moveY !== 0) {
+      direction.z = moveY; // Forward is negative Y in input, but we want to go forward
     }
-    if (backward) {
-      direction.z += 1;
-    }
-    
+
     // Apply rotation to direction
     if (direction.length() > 0) {
       direction.normalize();
       direction.applyAxisAngle(new Vector3(0, 1, 0), meshRef.current.rotation.y);
-      
+
       // Calculate new position
       const newX = meshRef.current.position.x + direction.x * MOVE_SPEED * delta;
       const newZ = meshRef.current.position.z + direction.z * MOVE_SPEED * delta;
-      
+
       // Clamp to room bounds
       meshRef.current.position.x = Math.max(-ROOM_BOUNDS, Math.min(ROOM_BOUNDS, newX));
       meshRef.current.position.z = Math.max(-ROOM_BOUNDS, Math.min(ROOM_BOUNDS, newZ));
     }
-    
+
     // Update store with player position
     setPlayerPosition({
       x: meshRef.current.position.x,
@@ -91,23 +85,23 @@ export function Player({ cabinets, interactionDistance = 2.5 }: PlayerProps) {
       z: meshRef.current.position.z,
     });
     setPlayerRotation(meshRef.current.rotation.y);
-    
+
     // Check proximity to cabinets
     let closestCabinet: CabinetInfo | null = null;
     let closestDistance = interactionDistance;
-    
+
     for (const cabinet of cabinets) {
       const distance = Math.sqrt(
         Math.pow(meshRef.current.position.x - cabinet.position.x, 2) +
         Math.pow(meshRef.current.position.z - cabinet.position.z, 2)
       );
-      
+
       if (distance < closestDistance) {
         closestDistance = distance;
         closestCabinet = cabinet;
       }
     }
-    
+
     updateNearCabinet(closestCabinet);
   });
 
@@ -127,7 +121,7 @@ export function Player({ cabinets, interactionDistance = 2.5 }: PlayerProps) {
           roughness={0.4}
         />
       </mesh>
-      
+
       {/* Direction indicator */}
       <mesh position={[0, 0.5, -0.4]}>
         <coneGeometry args={[0.15, 0.3, 8]} />
@@ -140,4 +134,3 @@ export function Player({ cabinets, interactionDistance = 2.5 }: PlayerProps) {
     </group>
   );
 }
-

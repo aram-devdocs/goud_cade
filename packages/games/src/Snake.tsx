@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useCallback, useState } from 'react';
+import { useInputStore, type Direction } from '@repo/input';
 
 const CANVAS_WIDTH = 400;
 const CANVAS_HEIGHT = 360;
@@ -12,8 +13,6 @@ interface Point {
   x: number;
   y: number;
 }
-
-type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 
 type SoundType = 'eat' | 'gameOver' | 'move' | 'start';
 
@@ -39,10 +38,15 @@ export function useSnakeGame({ isActive, onScoreChange, onGameOver, canvasRef, p
   const scoreRef = useRef(0);
   const gameOverRef = useRef(false);
   const isActiveRef = useRef(isActive);
+  const lastInputDirectionRef = useRef<Direction | null>(null);
 
   // Visual effect refs
   const flashRef = useRef<number>(0); // Timestamp for food eating flash effect
   const highScoreRef = useRef<number>(0); // High score for persistence
+
+  // Get input from unified input store
+  const inputDirection = useInputStore((state) => state.direction);
+  const action = useInputStore((state) => state.action);
 
   // Load high score from localStorage on init
   useEffect(() => {
@@ -91,6 +95,7 @@ export function useSnakeGame({ isActive, onScoreChange, onGameOver, canvasRef, p
     gameOverRef.current = false;
     setGameOver(false);
     lastMoveRef.current = performance.now(); // Use current time for proper restart timing
+    lastInputDirectionRef.current = null;
     playSound?.('start'); // Play start jingle
   }, [generateFood, playSound]);
 
@@ -357,50 +362,47 @@ export function useSnakeGame({ isActive, onScoreChange, onGameOver, canvasRef, p
     gameLoopRef.current = requestAnimationFrame(gameLoop);
   }, [draw, generateFood, getCurrentSpeed, updateHighScore, playSound, onGameOver, onScoreChange]);
 
-  // Handle keyboard input
+  // Handle direction input from unified input system
+  useEffect(() => {
+    if (!isActive || !inputDirection) return;
+
+    const currentDir = directionRef.current;
+
+    // Only accept direction if it's different from the last one we processed
+    // This prevents double-inputs from the same direction
+    if (inputDirection === lastInputDirectionRef.current) return;
+
+    // Validate direction (can't reverse into self)
+    let isValid = false;
+    switch (inputDirection) {
+      case 'UP':
+        isValid = currentDir !== 'DOWN';
+        break;
+      case 'DOWN':
+        isValid = currentDir !== 'UP';
+        break;
+      case 'LEFT':
+        isValid = currentDir !== 'RIGHT';
+        break;
+      case 'RIGHT':
+        isValid = currentDir !== 'LEFT';
+        break;
+    }
+
+    if (isValid) {
+      nextDirectionRef.current = inputDirection;
+      lastInputDirectionRef.current = inputDirection;
+    }
+  }, [isActive, inputDirection]);
+
+  // Handle action button for restart
   useEffect(() => {
     if (!isActive) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const currentDir = directionRef.current;
-      
-      switch (e.key) {
-        case 'ArrowUp':
-        case 'w':
-        case 'W':
-          if (currentDir !== 'DOWN') nextDirectionRef.current = 'UP';
-          e.preventDefault();
-          break;
-        case 'ArrowDown':
-        case 's':
-        case 'S':
-          if (currentDir !== 'UP') nextDirectionRef.current = 'DOWN';
-          e.preventDefault();
-          break;
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-          if (currentDir !== 'RIGHT') nextDirectionRef.current = 'LEFT';
-          e.preventDefault();
-          break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-          if (currentDir !== 'LEFT') nextDirectionRef.current = 'RIGHT';
-          e.preventDefault();
-          break;
-        case ' ':
-          if (gameOverRef.current) {
-            resetGame();
-          }
-          e.preventDefault();
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isActive, resetGame]);
+    if (action && gameOverRef.current) {
+      resetGame();
+    }
+  }, [isActive, action, resetGame]);
 
   // Start/stop game loop - only depends on isActive
   useEffect(() => {

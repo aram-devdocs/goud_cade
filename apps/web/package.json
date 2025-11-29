@@ -12,6 +12,7 @@
   "dependencies": {
     "@repo/games": "workspace:*",
     "@repo/hooks": "workspace:*",
+    "@repo/input": "workspace:*",
     "@repo/scene": "workspace:*",
     "@repo/ui": "workspace:*",
     "next": "^14.2.0",

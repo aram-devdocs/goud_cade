@@ -33,12 +33,14 @@ export const useInputStore = create<InputStore>((set, get) => ({
 
   setLook: (look: Vector2) => set({ look }),
 
+  // Add to look delta - used for accumulated input like touch drag
+  // Accumulates between frames, Player consumes and resets
   addLook: (delta: Vector2) => {
     const current = get().look;
     set({
       look: {
-        x: Math.max(-1, Math.min(1, current.x + delta.x)),
-        y: Math.max(-1, Math.min(1, current.y + delta.y)),
+        x: current.x + delta.x,
+        y: current.y + delta.y,
       },
     });
   },

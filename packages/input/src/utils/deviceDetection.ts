@@ -1,15 +1,22 @@
 /**
  * Detect if the device supports touch input
+ * Checks multiple signals: touch events, maxTouchPoints, and mobile user agent
  */
 export function isTouchDevice(): boolean {
   if (typeof window === 'undefined') return false;
 
-  return (
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    // @ts-expect-error - msMaxTouchPoints is IE specific
-    navigator.msMaxTouchPoints > 0
-  );
+  // Check for touch event support
+  const hasOntouchstart = 'ontouchstart' in window;
+  const maxTouchPoints = navigator.maxTouchPoints;
+  // @ts-expect-error - msMaxTouchPoints is IE specific
+  const msMaxTouchPoints = navigator.msMaxTouchPoints || 0;
+
+  const hasTouchEvents = hasOntouchstart || maxTouchPoints > 0 || msMaxTouchPoints > 0;
+
+  // Also check user agent for mobile browsers (helps with DevTools emulation)
+  const isMobile = isMobileBrowser();
+
+  return hasTouchEvents || isMobile;
 }
 
 /**

@@ -53,8 +53,11 @@ export function useTouchInput(enabled: boolean = true) {
           const deltaX = touch.clientX - lastTouchRef.current.x;
           const deltaY = touch.clientY - lastTouchRef.current.y;
 
-          // Scale sensitivity based on screen size
-          const sensitivity = 0.005;
+          // Convert pixel delta to rotation radians
+          // Lower sensitivity for smoother control - approximately 180 degrees per full screen swipe
+          const screenWidth = window.innerWidth;
+          const sensitivity = Math.PI / screenWidth; // Pi radians (180 deg) per screen width
+
           addLook({
             x: deltaX * sensitivity,
             y: deltaY * sensitivity,

@@ -6,14 +6,13 @@ import type { Direction } from '../types';
 
 interface VirtualDPadProps {
   size?: number;
-  className?: string;
 }
 
 /**
  * Virtual D-Pad component for directional input (used in games like Snake)
- * Updates the input store's direction based on which button is pressed
+ * Minimal Dark design - subtle, unobtrusive controls
  */
-export function VirtualDPad({ size = 140, className = '' }: VirtualDPadProps) {
+export function VirtualDPad({ size = 140 }: VirtualDPadProps) {
   const [activeDirection, setActiveDirection] = useState<Direction | null>(null);
   const touchIdRef = useRef<number | null>(null);
 
@@ -21,6 +20,7 @@ export function VirtualDPad({ size = 140, className = '' }: VirtualDPadProps) {
   const setActiveSource = useInputStore((state) => state.setActiveSource);
 
   const buttonSize = size * 0.35;
+  const gap = size * 0.05;
 
   const handleDirectionStart = useCallback(
     (direction: Direction, touchId: number) => {
@@ -45,14 +45,14 @@ export function VirtualDPad({ size = 140, className = '' }: VirtualDPadProps) {
 
   const createButtonHandlers = (direction: Direction) => ({
     onTouchStart: (e: React.TouchEvent) => {
-      e.preventDefault();
+      // Note: preventDefault not needed - touch-action: none handles scroll prevention
+      e.stopPropagation();
       const touch = e.changedTouches[0];
       if (touch) {
         handleDirectionStart(direction, touch.identifier);
       }
     },
     onTouchEnd: (e: React.TouchEvent) => {
-      e.preventDefault();
       const touch = e.changedTouches[0];
       if (touch) {
         handleDirectionEnd(touch.identifier);
@@ -66,127 +66,136 @@ export function VirtualDPad({ size = 140, className = '' }: VirtualDPadProps) {
     },
   });
 
-  const getButtonStyle = (direction: Direction, position: React.CSSProperties) => ({
-    ...position,
-    width: buttonSize,
-    height: buttonSize,
-    backgroundColor:
-      activeDirection === direction
-        ? 'rgba(0, 255, 0, 0.8)'
-        : 'rgba(0, 255, 0, 0.4)',
-    border: '2px solid',
-    borderColor:
-      activeDirection === direction
-        ? 'rgba(0, 255, 0, 1)'
-        : 'rgba(0, 255, 0, 0.6)',
-    boxShadow:
-      activeDirection === direction
-        ? '0 0 20px rgba(0, 255, 0, 0.8), inset 0 0 10px rgba(0, 255, 0, 0.4)'
-        : '0 0 8px rgba(0, 255, 0, 0.3)',
-    transition: 'all 0.1s ease-out',
-  });
+  const getButtonStyle = (direction: Direction, positionStyle: React.CSSProperties): React.CSSProperties => {
+    const isActive = activeDirection === direction;
+    return {
+      position: 'absolute',
+      ...positionStyle,
+      width: buttonSize,
+      height: buttonSize,
+      backgroundColor: isActive ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.5)',
+      border: '1px solid',
+      borderColor: isActive ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.15)',
+      borderRadius: 8,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: isActive ? '0 0 10px rgba(255, 255, 255, 0.2)' : 'none',
+      transition: 'all 0.1s ease-out',
+      touchAction: 'none',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+    };
+  };
 
-  const arrowStyle: React.CSSProperties = {
-    width: 0,
-    height: 0,
-    borderStyle: 'solid',
+  const getArrowStyle = (direction: Direction): React.CSSProperties => {
+    const isActive = activeDirection === direction;
+    const arrowSize = buttonSize * 0.25;
+    const base: React.CSSProperties = {
+      width: 0,
+      height: 0,
+      borderStyle: 'solid',
+      opacity: isActive ? 1 : 0.6,
+    };
+
+    switch (direction) {
+      case 'UP':
+        return {
+          ...base,
+          borderWidth: `0 ${arrowSize}px ${arrowSize * 1.2}px ${arrowSize}px`,
+          borderColor: 'transparent transparent rgba(255,255,255,0.9) transparent',
+        };
+      case 'DOWN':
+        return {
+          ...base,
+          borderWidth: `${arrowSize * 1.2}px ${arrowSize}px 0 ${arrowSize}px`,
+          borderColor: 'rgba(255,255,255,0.9) transparent transparent transparent',
+        };
+      case 'LEFT':
+        return {
+          ...base,
+          borderWidth: `${arrowSize}px ${arrowSize * 1.2}px ${arrowSize}px 0`,
+          borderColor: 'transparent rgba(255,255,255,0.9) transparent transparent',
+        };
+      case 'RIGHT':
+        return {
+          ...base,
+          borderWidth: `${arrowSize}px 0 ${arrowSize}px ${arrowSize * 1.2}px`,
+          borderColor: 'transparent transparent transparent rgba(255,255,255,0.9)',
+        };
+    }
   };
 
   return (
     <div
       data-touch-control="dpad"
-      className={`relative touch-none select-none ${className}`}
       style={{
+        position: 'relative',
         width: size,
         height: size,
+        touchAction: 'none',
+        userSelect: 'none',
       }}
     >
       {/* Up button */}
       <button
         type="button"
-        className="absolute flex items-center justify-center rounded-lg"
         style={getButtonStyle('UP', {
           left: (size - buttonSize) / 2,
-          top: 0,
+          top: gap,
         })}
         {...createButtonHandlers('UP')}
       >
-        <div
-          style={{
-            ...arrowStyle,
-            borderWidth: `0 ${buttonSize * 0.2}px ${buttonSize * 0.3}px ${buttonSize * 0.2}px`,
-            borderColor: 'transparent transparent #000 transparent',
-          }}
-        />
+        <div style={getArrowStyle('UP')} />
       </button>
 
       {/* Down button */}
       <button
         type="button"
-        className="absolute flex items-center justify-center rounded-lg"
         style={getButtonStyle('DOWN', {
           left: (size - buttonSize) / 2,
-          bottom: 0,
+          bottom: gap,
         })}
         {...createButtonHandlers('DOWN')}
       >
-        <div
-          style={{
-            ...arrowStyle,
-            borderWidth: `${buttonSize * 0.3}px ${buttonSize * 0.2}px 0 ${buttonSize * 0.2}px`,
-            borderColor: '#000 transparent transparent transparent',
-          }}
-        />
+        <div style={getArrowStyle('DOWN')} />
       </button>
 
       {/* Left button */}
       <button
         type="button"
-        className="absolute flex items-center justify-center rounded-lg"
         style={getButtonStyle('LEFT', {
-          left: 0,
+          left: gap,
           top: (size - buttonSize) / 2,
         })}
         {...createButtonHandlers('LEFT')}
       >
-        <div
-          style={{
-            ...arrowStyle,
-            borderWidth: `${buttonSize * 0.2}px ${buttonSize * 0.3}px ${buttonSize * 0.2}px 0`,
-            borderColor: 'transparent #000 transparent transparent',
-          }}
-        />
+        <div style={getArrowStyle('LEFT')} />
       </button>
 
       {/* Right button */}
       <button
         type="button"
-        className="absolute flex items-center justify-center rounded-lg"
         style={getButtonStyle('RIGHT', {
-          right: 0,
+          right: gap,
           top: (size - buttonSize) / 2,
         })}
         {...createButtonHandlers('RIGHT')}
       >
-        <div
-          style={{
-            ...arrowStyle,
-            borderWidth: `${buttonSize * 0.2}px 0 ${buttonSize * 0.2}px ${buttonSize * 0.3}px`,
-            borderColor: 'transparent transparent transparent #000',
-          }}
-        />
+        <div style={getArrowStyle('RIGHT')} />
       </button>
 
       {/* Center decoration */}
       <div
-        className="absolute rounded-lg"
         style={{
-          left: (size - buttonSize * 0.6) / 2,
-          top: (size - buttonSize * 0.6) / 2,
-          width: buttonSize * 0.6,
-          height: buttonSize * 0.6,
-          backgroundColor: 'rgba(0, 50, 0, 0.5)',
-          border: '1px solid rgba(0, 255, 0, 0.3)',
+          position: 'absolute',
+          left: (size - buttonSize * 0.5) / 2,
+          top: (size - buttonSize * 0.5) / 2,
+          width: buttonSize * 0.5,
+          height: buttonSize * 0.5,
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 6,
         }}
       />
     </div>

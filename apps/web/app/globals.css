@@ -4,6 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area CSS variables for notched phones */
+:root {
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-top: env(safe-area-inset-top, 0px);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -23,10 +31,13 @@ body {
   height: 100%;
 }
 
-/* Prevent text selection during gameplay */
+/* Prevent text selection and browser gestures during gameplay */
 .game-container {
   user-select: none;
   -webkit-user-select: none;
+  touch-action: none;           /* Prevent scroll/zoom/pan */
+  -webkit-touch-callout: none;  /* Prevent iOS callout menu */
+  overscroll-behavior: none;    /* Prevent pull-to-refresh */
 }
 
 /* Loading screen styles */

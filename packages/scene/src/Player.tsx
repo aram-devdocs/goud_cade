@@ -27,6 +27,8 @@ export function Player({ cabinets, interactionDistance = 2.5 }: PlayerProps) {
 
   // Get input from unified input store
   const movement = useInputStore((state) => state.movement);
+  const look = useInputStore((state) => state.look);
+  const setLook = useInputStore((state) => state.setLook);
   const interact = useInputStore((state) => state.interact);
 
   // Handle interact button press for interaction
@@ -53,9 +55,17 @@ export function Player({ cabinets, interactionDistance = 2.5 }: PlayerProps) {
     const moveX = movement.x; // -1 to 1 (left/right for rotation)
     const moveY = movement.y; // -1 to 1 (forward/backward)
 
-    // Rotation (left/right controls rotation)
+    // Rotation from joystick (left/right controls rotation)
     if (moveX !== 0) {
       meshRef.current.rotation.y -= moveX * ROTATION_SPEED * delta;
+    }
+
+    // Rotation from touch look (drag to look)
+    // Look input is already in radians from useTouchInput
+    if (look.x !== 0 || look.y !== 0) {
+      meshRef.current.rotation.y -= look.x;
+      // Consume the look input by resetting it
+      setLook({ x: 0, y: 0 });
     }
 
     // Movement direction based on rotation

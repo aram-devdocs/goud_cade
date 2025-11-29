@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useGameStore, useArcadeAudio } from '@repo/hooks';
-import { useInputStore, TouchControls } from '@repo/input';
+import { useInputStore, TouchControls, useTouchInput } from '@repo/input';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
 import { SnakeGame, FlappyBirdGame } from '@repo/games';
 
@@ -22,6 +22,11 @@ const Game = dynamic(
 );
 
 export default function ArcadePage() {
+  // Initialize touch detection BEFORE Game loads to fix race condition
+  // This ensures isTouchDevice is set before TouchControls checks visibility
+  console.log('[ArcadePage] Calling useTouchInput');
+  useTouchInput();
+
   const mode = useGameStore((state) => state.mode);
   const activeCabinet = useGameStore((state) => state.activeCabinet);
   const stopPlaying = useGameStore((state) => state.stopPlaying);
@@ -132,6 +137,7 @@ export default function ArcadePage() {
       {/* Touch Controls */}
       <TouchControls
         mode={mode}
+        gameType={activeCabinet?.game as 'snake' | 'flappy' | null}
         onExit={stopPlaying}
       />
 

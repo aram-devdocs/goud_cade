@@ -8,17 +8,15 @@ import type { Vector2 } from '../types';
 interface VirtualJoystickProps {
   size?: number;
   deadzone?: number;
-  className?: string;
 }
 
 /**
  * Virtual joystick component for touch controls
- * Updates the input store's movement vector based on touch position
+ * Minimal Dark design - frosted glass effect
  */
 export function VirtualJoystick({
   size = 120,
   deadzone = 0.1,
-  className = '',
 }: VirtualJoystickProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const touchIdRef = useRef<number | null>(null);
@@ -28,9 +26,14 @@ export function VirtualJoystick({
   const setMovement = useInputStore((state) => state.setMovement);
   const setActiveSource = useInputStore((state) => state.setActiveSource);
 
+  const knobSize = size * 0.4;
+  const maxRadius = (size - knobSize) / 2 - 4;
+
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
       if (touchIdRef.current !== null) return;
+      // Note: preventDefault not needed - touch-action: none handles scroll prevention
+      e.stopPropagation();
 
       const touch = e.changedTouches[0];
       if (!touch || !containerRef.current) return;
@@ -39,37 +42,35 @@ export function VirtualJoystick({
       setIsActive(true);
       setActiveSource('touch');
 
-      // Calculate initial position
       const rect = containerRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      const maxRadius = size / 2 - 20; // Account for knob size
 
       const deltaX = touch.clientX - centerX;
       const deltaY = touch.clientY - centerY;
 
-      // Normalize to -1 to 1 range
       const normalizedX = Math.max(-1, Math.min(1, deltaX / maxRadius));
       const normalizedY = Math.max(-1, Math.min(1, deltaY / maxRadius));
 
       const vector = normalizeVector({ x: normalizedX, y: normalizedY });
-
-      // Apply deadzone
       const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+
       if (magnitude < deadzone) {
         setKnobPosition({ x: 0, y: 0 });
         setMovement({ x: 0, y: 0 });
       } else {
-        setKnobPosition({ x: vector.x * maxRadius, y: vector.y * maxRadius });
+        const clampedMag = Math.min(1, magnitude);
+        setKnobPosition({ x: vector.x * clampedMag * maxRadius, y: vector.y * clampedMag * maxRadius });
         setMovement(vector);
       }
     },
-    [size, deadzone, setMovement, setActiveSource]
+    [maxRadius, deadzone, setMovement, setActiveSource]
   );
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (touchIdRef.current === null || !containerRef.current) return;
+      // Note: preventDefault not needed - touch-action: none handles scroll prevention
 
       const touch = Array.from(e.changedTouches).find(
         (t) => t.identifier === touchIdRef.current
@@ -79,36 +80,31 @@ export function VirtualJoystick({
       const rect = containerRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      const maxRadius = size / 2 - 20;
 
       const deltaX = touch.clientX - centerX;
       const deltaY = touch.clientY - centerY;
 
-      // Normalize to -1 to 1 range
       const normalizedX = Math.max(-1, Math.min(1, deltaX / maxRadius));
       const normalizedY = Math.max(-1, Math.min(1, deltaY / maxRadius));
 
       const vector = normalizeVector({ x: normalizedX, y: normalizedY });
-
-      // Apply deadzone
       const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+
       if (magnitude < deadzone) {
         setKnobPosition({ x: 0, y: 0 });
         setMovement({ x: 0, y: 0 });
       } else {
-        // Clamp knob position to circle
-        const clampedMagnitude = Math.min(1, magnitude);
-        const scale = clampedMagnitude / magnitude;
+        const clampedMag = Math.min(1, magnitude);
         setKnobPosition({
-          x: vector.x * scale * maxRadius,
-          y: vector.y * scale * maxRadius,
+          x: vector.x * clampedMag * maxRadius,
+          y: vector.y * clampedMag * maxRadius,
         });
         setMovement(vector);
       }
 
       setActiveSource('touch');
     },
-    [size, deadzone, setMovement, setActiveSource]
+    [maxRadius, deadzone, setMovement, setActiveSource]
   );
 
   const handleTouchEnd = useCallback(
@@ -126,57 +122,62 @@ export function VirtualJoystick({
     [setMovement]
   );
 
-  // Clean up on unmount
   useEffect(() => {
     return () => {
       setMovement({ x: 0, y: 0 });
     };
   }, [setMovement]);
 
-  const knobSize = 50;
-  const halfKnob = knobSize / 2;
-
   return (
     <div
       ref={containerRef}
       data-touch-control="joystick"
-      className={`relative touch-none select-none ${className}`}
       style={{
+        position: 'relative',
         width: size,
         height: size,
+        touchAction: 'none',
+        userSelect: 'none',
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
     >
-      {/* Outer ring */}
+      {/* Outer ring - frosted glass effect */}
       <div
-        className="absolute inset-0 rounded-full border-2"
         style={{
-          borderColor: isActive ? 'rgba(0, 255, 255, 0.8)' : 'rgba(0, 255, 255, 0.4)',
-          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          borderRadius: '50%',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          border: '1px solid',
+          borderColor: isActive ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.15)',
           boxShadow: isActive
-            ? '0 0 20px rgba(0, 255, 255, 0.5), inset 0 0 20px rgba(0, 255, 255, 0.2)'
-            : '0 0 10px rgba(0, 255, 255, 0.2)',
+            ? '0 0 15px rgba(255, 255, 255, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.05)'
+            : 'inset 0 0 15px rgba(0, 0, 0, 0.3)',
           transition: 'all 0.15s ease-out',
         }}
       />
 
       {/* Inner knob */}
       <div
-        className="absolute rounded-full"
         style={{
+          position: 'absolute',
           width: knobSize,
           height: knobSize,
-          left: size / 2 - halfKnob + knobPosition.x,
-          top: size / 2 - halfKnob + knobPosition.y,
-          backgroundColor: isActive
-            ? 'rgba(0, 255, 255, 0.9)'
-            : 'rgba(0, 255, 255, 0.6)',
+          left: size / 2 - knobSize / 2 + knobPosition.x,
+          top: size / 2 - knobSize / 2 + knobPosition.y,
+          borderRadius: '50%',
+          backgroundColor: isActive ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.2)',
+          border: '1px solid',
+          borderColor: isActive ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.25)',
           boxShadow: isActive
-            ? '0 0 15px rgba(0, 255, 255, 0.8)'
-            : '0 0 8px rgba(0, 255, 255, 0.4)',
+            ? '0 0 12px rgba(255, 255, 255, 0.3)'
+            : '0 2px 4px rgba(0, 0, 0, 0.3)',
           transition: isActive ? 'none' : 'all 0.15s ease-out',
         }}
       />

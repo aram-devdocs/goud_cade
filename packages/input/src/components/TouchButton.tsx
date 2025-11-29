@@ -2,33 +2,34 @@
 
 import { useRef, useCallback, useState } from 'react';
 
+type ButtonVariant = 'default' | 'action' | 'exit';
+
 interface TouchButtonProps {
   label: string;
   onPress: () => void;
   onRelease?: () => void;
   size?: number;
-  color?: string;
-  className?: string;
+  variant?: ButtonVariant;
 }
 
 /**
- * Generic touch button component for action buttons
- * Handles touch events with proper press/release detection
+ * Touch button component for action buttons
+ * Minimal Dark design - subtle, unobtrusive controls
  */
 export function TouchButton({
   label,
   onPress,
   onRelease,
   size = 60,
-  color = '#ff00ff',
-  className = '',
+  variant = 'default',
 }: TouchButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
   const touchIdRef = useRef<number | null>(null);
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      e.preventDefault();
+      // Note: preventDefault not needed - touch-action: none handles scroll prevention
+      e.stopPropagation();
       if (touchIdRef.current !== null) return;
 
       const touch = e.changedTouches[0];
@@ -55,27 +56,62 @@ export function TouchButton({
     [onRelease]
   );
 
-  // Parse color for styling
-  const baseColor = color;
+  // Get variant-specific colors
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'action':
+        return {
+          bgActive: 'rgba(100, 200, 100, 0.4)',
+          bgInactive: 'rgba(60, 120, 60, 0.3)',
+          borderActive: 'rgba(140, 255, 140, 0.6)',
+          borderInactive: 'rgba(100, 200, 100, 0.3)',
+          glowColor: 'rgba(100, 200, 100, 0.3)',
+        };
+      case 'exit':
+        return {
+          bgActive: 'rgba(200, 100, 100, 0.4)',
+          bgInactive: 'rgba(120, 60, 60, 0.3)',
+          borderActive: 'rgba(255, 140, 140, 0.6)',
+          borderInactive: 'rgba(200, 100, 100, 0.3)',
+          glowColor: 'rgba(200, 100, 100, 0.3)',
+        };
+      default:
+        return {
+          bgActive: 'rgba(255, 255, 255, 0.35)',
+          bgInactive: 'rgba(0, 0, 0, 0.5)',
+          borderActive: 'rgba(255, 255, 255, 0.6)',
+          borderInactive: 'rgba(255, 255, 255, 0.2)',
+          glowColor: 'rgba(255, 255, 255, 0.2)',
+        };
+    }
+  };
+
+  const colors = getVariantStyles();
 
   return (
     <button
       type="button"
       data-touch-control="button"
-      className={`flex items-center justify-center rounded-full touch-none select-none ${className}`}
       style={{
         width: size,
         height: size,
-        backgroundColor: isPressed
-          ? `${baseColor}dd`
-          : `${baseColor}66`,
-        border: '3px solid',
-        borderColor: isPressed ? baseColor : `${baseColor}99`,
+        borderRadius: '50%',
+        backgroundColor: isPressed ? colors.bgActive : colors.bgInactive,
+        border: '1px solid',
+        borderColor: isPressed ? colors.borderActive : colors.borderInactive,
         boxShadow: isPressed
-          ? `0 0 25px ${baseColor}aa, inset 0 0 15px ${baseColor}44`
-          : `0 0 12px ${baseColor}44`,
+          ? `0 0 15px ${colors.glowColor}, inset 0 0 10px rgba(255, 255, 255, 0.1)`
+          : 'inset 0 0 10px rgba(0, 0, 0, 0.3)',
         transform: isPressed ? 'scale(0.95)' : 'scale(1)',
         transition: 'all 0.1s ease-out',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        cursor: 'pointer',
+        outline: 'none',
       }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -83,11 +119,12 @@ export function TouchButton({
     >
       <span
         style={{
-          color: isPressed ? '#000' : '#fff',
-          fontSize: size * 0.25,
+          color: isPressed ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.8)',
+          fontSize: size * 0.28,
           fontWeight: 'bold',
           fontFamily: '"Press Start 2P", monospace',
-          textShadow: isPressed ? 'none' : `0 0 5px ${baseColor}`,
+          textShadow: isPressed ? '0 0 8px rgba(255, 255, 255, 0.5)' : 'none',
+          lineHeight: 1,
         }}
       >
         {label}

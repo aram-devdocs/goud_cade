@@ -132,5 +132,7 @@ export function useShouldShowTouchControls(): boolean {
   // Show touch controls if:
   // 1. It's a touch device, AND
   // 2. Either no other input is active, or touch is the active source
-  return isTouchDevice && (activeSource === null || activeSource === 'touch');
+  const shouldShow = isTouchDevice && (activeSource === null || activeSource === 'touch');
+
+  return shouldShow;
 }

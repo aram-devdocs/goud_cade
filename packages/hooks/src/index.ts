@@ -1,7 +1,9 @@
 export { useGameStore } from './useGameStore';
-export type { 
-  GameMode, 
-  PlayerPosition, 
-  CabinetInfo 
+export type {
+  GameMode,
+  PlayerPosition,
+  CabinetInfo
 } from './useGameStore';
+
+export { useArcadeAudio } from './useArcadeAudio';
 

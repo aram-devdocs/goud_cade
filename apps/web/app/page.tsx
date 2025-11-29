@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { useGameStore } from '@repo/hooks';
+import { useGameStore, useArcadeAudio } from '@repo/hooks';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
 import { SnakeGame } from '@repo/games';
 
@@ -26,6 +26,9 @@ export default function ArcadePage() {
   const [gameCanvases, setGameCanvases] = useState<Record<string, HTMLCanvasElement | null>>({});
   const [score, setScore] = useState(0);
 
+  // Initialize arcade audio
+  const { playSound } = useArcadeAudio(true);
+
   // Handle canvas ready from games
   const handleSnakeCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     setGameCanvases((prev) => ({ ...prev, 'snake-1': canvas }));
@@ -44,10 +47,11 @@ export default function ArcadePage() {
       <GameOverlay score={score} />
       
       {/* Hidden game canvases for texture rendering */}
-      <SnakeGame 
+      <SnakeGame
         isActive={isSnakeActive}
         onCanvasReady={handleSnakeCanvasReady}
         onScoreChange={setScore}
+        playSound={playSound}
       />
       
       {/* Controls hint */}

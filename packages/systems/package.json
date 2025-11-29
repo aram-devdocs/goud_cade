@@ -1,5 +1,5 @@
 {
-  "name": "@repo/games",
+  "name": "@repo/systems",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,8 +16,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/input": "workspace:*",
-    "@repo/game-definitions": "workspace:*"
+    "@repo/ecs": "workspace:*",
+    "@repo/components": "workspace:*",
+    "@repo/input": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

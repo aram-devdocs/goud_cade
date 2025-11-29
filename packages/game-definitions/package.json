@@ -1,5 +1,5 @@
 {
-  "name": "@repo/games",
+  "name": "@repo/game-definitions",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,6 +9,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./snake": {
+      "types": "./src/snake/index.ts",
+      "default": "./src/snake/index.ts"
     }
   },
   "scripts": {
@@ -16,8 +20,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/input": "workspace:*",
-    "@repo/game-definitions": "workspace:*"
+    "@repo/ecs": "workspace:*",
+    "@repo/components": "workspace:*",
+    "@repo/systems": "workspace:*",
+    "@repo/input": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

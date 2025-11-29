@@ -1,5 +1,5 @@
 {
-  "name": "@repo/games",
+  "name": "@repo/components",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,19 +16,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/input": "workspace:*",
-    "@repo/game-definitions": "workspace:*"
+    "@repo/ecs": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@repo/tsconfig": "workspace:*",
-    "@types/react": "^18.2.0",
     "eslint": "^9.39.1",
-    "react": "^18.2.0",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.48.0"
-  },
-  "peerDependencies": {
-    "react": "^18.2.0"
   }
 }

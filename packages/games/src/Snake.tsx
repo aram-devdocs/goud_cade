@@ -189,7 +189,9 @@ export function useSnakeGame({ isActive, onScoreChange, onGameOver, canvasRef }:
       directionRef.current = nextDirectionRef.current;
       
       const snake = snakeRef.current;
-      const head = { ...snake[0] };
+      const firstSegment = snake[0];
+      if (!firstSegment) return;
+      const head: Point = { x: firstSegment.x, y: firstSegment.y };
       
       // Move head
       switch (directionRef.current) {
@@ -303,7 +305,7 @@ export function useSnakeGame({ isActive, onScoreChange, onGameOver, canvasRef }:
         gameLoopRef.current = null;
       }
     };
-  }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isActive]);
 
   // Initial draw
   useEffect(() => {

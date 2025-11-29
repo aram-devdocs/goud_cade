@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useGameStore, useArcadeAudio } from '@repo/hooks';
 import { useInputStore, TouchControls } from '@repo/input';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
-import { SnakeGame } from '@repo/games';
+import { SnakeGame, FlappyBirdGame } from '@repo/games';
 
 // Dynamically import the 3D scene to avoid SSR issues with Three.js
 const Game = dynamic(
@@ -41,8 +41,13 @@ export default function ArcadePage() {
     setGameCanvases((prev) => ({ ...prev, 'snake-1': canvas }));
   }, []);
 
-  // Check if snake game is active
+  const handleFlappyCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    setGameCanvases((prev) => ({ ...prev, 'flappy-1': canvas }));
+  }, []);
+
+  // Check if games are active
   const isSnakeActive = mode === 'playing' && activeCabinet?.id === 'snake-1';
+  const isFlappyActive = mode === 'playing' && activeCabinet?.id === 'flappy-1';
 
   // Get control hints based on input source
   const getWalkingControls = () => {
@@ -71,8 +76,15 @@ export default function ArcadePage() {
   };
 
   const getPlayingControls = () => {
+    const isFlappy = activeCabinet?.game === 'flappy';
+
     if (activeSource === 'gamepad' || hasGamepad) {
-      return (
+      return isFlappy ? (
+        <>
+          <div>A Button - Flap</div>
+          <div>B - Exit Game</div>
+        </>
+      ) : (
         <>
           <div>D-Pad/Stick - Control Snake</div>
           <div>B - Exit Game</div>
@@ -80,14 +92,24 @@ export default function ArcadePage() {
       );
     }
     if (isTouchDevice && (activeSource === 'touch' || activeSource === null)) {
-      return (
+      return isFlappy ? (
+        <>
+          <div>Tap Screen - Flap</div>
+          <div>X Button - Exit</div>
+        </>
+      ) : (
         <>
           <div>D-Pad - Control Snake</div>
           <div>X Button - Exit</div>
         </>
       );
     }
-    return (
+    return isFlappy ? (
+      <>
+        <div>SPACE - Flap</div>
+        <div>ESC - Exit Game</div>
+      </>
+    ) : (
       <>
         <div>Arrow Keys - Control Snake</div>
         <div>ESC - Exit Game</div>
@@ -117,6 +139,12 @@ export default function ArcadePage() {
       <SnakeGame
         isActive={isSnakeActive}
         onCanvasReady={handleSnakeCanvasReady}
+        onScoreChange={setScore}
+        playSound={playSound}
+      />
+      <FlappyBirdGame
+        isActive={isFlappyActive}
+        onCanvasReady={handleFlappyCanvasReady}
         onScoreChange={setScore}
         playSound={playSound}
       />

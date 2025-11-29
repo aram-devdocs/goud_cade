@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 
-type SoundType = 'eat' | 'gameOver' | 'move' | 'start';
+type SoundType = 'eat' | 'gameOver' | 'move' | 'start' | 'flap' | 'score';
 
 interface AudioContextRef {
   context: AudioContext | null;
@@ -124,6 +124,50 @@ export function useArcadeAudio(enabled: boolean = true) {
           osc.start(now + i * 0.1);
           osc.stop(now + i * 0.1 + 0.15);
         });
+        break;
+      }
+
+      case 'flap': {
+        // Quick ascending whoosh - bird wing flap
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.05);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.1);
+        break;
+      }
+
+      case 'score': {
+        // Pleasant ding - passing through pipe
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now); // A5 note
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.15);
+
+        // Add slight harmonic
+        const osc2 = context.createOscillator();
+        const gain2 = context.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1320, now); // E6 (fifth above)
+        gain2.gain.setValueAtTime(0.1, now);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc2.connect(gain2);
+        gain2.connect(gainNode);
+        osc2.start(now);
+        osc2.stop(now + 0.12);
         break;
       }
     }

@@ -104,12 +104,19 @@ export function createFlappyGame(options: FlappyGameOptions): FlappyGameInstance
   function gameLoop(time: number) {
     if (!isRunning) return;
 
+    // Store current frame ID to detect if restart happened during update
+    const currentFrame = animationFrame;
+
     const deltaTime = (time - lastTime) / 1000;
     lastTime = time;
 
     world.update(deltaTime);
 
-    animationFrame = requestAnimationFrame(gameLoop);
+    // Only schedule next frame if no restart happened during update
+    // (restart changes animationFrame via stop() -> start())
+    if (isRunning && animationFrame === currentFrame) {
+      animationFrame = requestAnimationFrame(gameLoop);
+    }
   }
 
   function start() {

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useGameStore, useArcadeAudio } from '@repo/hooks';
 import { useInputStore, TouchControls, useTouchInput } from '@repo/input';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
-import { SnakeGame, FlappyBirdGame } from '@repo/games';
+import { SnakeGame, FlappyBirdGame, PacManGame } from '@repo/games';
 
 // Dynamically import the 3D scene to avoid SSR issues with Three.js
 const Game = dynamic(
@@ -50,9 +50,14 @@ export default function ArcadePage() {
     setGameCanvases((prev) => ({ ...prev, 'flappy-1': canvas }));
   }, []);
 
+  const handlePacManCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    setGameCanvases((prev) => ({ ...prev, 'pacman-1': canvas }));
+  }, []);
+
   // Check if games are active
   const isSnakeActive = mode === 'playing' && activeCabinet?.id === 'snake-1';
   const isFlappyActive = mode === 'playing' && activeCabinet?.id === 'flappy-1';
+  const isPacManActive = mode === 'playing' && activeCabinet?.id === 'pacman-1';
 
   // Get control hints based on input source
   const getWalkingControls = () => {
@@ -81,42 +86,51 @@ export default function ArcadePage() {
   };
 
   const getPlayingControls = () => {
-    const isFlappy = activeCabinet?.game === 'flappy';
+    const gameType = activeCabinet?.game;
 
     if (activeSource === 'gamepad' || hasGamepad) {
-      return isFlappy ? (
+      if (gameType === 'flappy') {
+        return (
+          <>
+            <div>A Button - Flap</div>
+            <div>B - Exit Game</div>
+          </>
+        );
+      }
+      return (
         <>
-          <div>A Button - Flap</div>
-          <div>B - Exit Game</div>
-        </>
-      ) : (
-        <>
-          <div>D-Pad/Stick - Control Snake</div>
+          <div>D-Pad/Stick - Move</div>
           <div>B - Exit Game</div>
         </>
       );
     }
     if (isTouchDevice && (activeSource === 'touch' || activeSource === null)) {
-      return isFlappy ? (
+      if (gameType === 'flappy') {
+        return (
+          <>
+            <div>Tap Screen - Flap</div>
+            <div>X Button - Exit</div>
+          </>
+        );
+      }
+      return (
         <>
-          <div>Tap Screen - Flap</div>
-          <div>X Button - Exit</div>
-        </>
-      ) : (
-        <>
-          <div>D-Pad - Control Snake</div>
+          <div>D-Pad - Move</div>
           <div>X Button - Exit</div>
         </>
       );
     }
-    return isFlappy ? (
+    if (gameType === 'flappy') {
+      return (
+        <>
+          <div>SPACE - Flap</div>
+          <div>ESC - Exit Game</div>
+        </>
+      );
+    }
+    return (
       <>
-        <div>SPACE - Flap</div>
-        <div>ESC - Exit Game</div>
-      </>
-    ) : (
-      <>
-        <div>Arrow Keys - Control Snake</div>
+        <div>Arrow Keys - Move</div>
         <div>ESC - Exit Game</div>
       </>
     );
@@ -142,7 +156,7 @@ export default function ArcadePage() {
       {/* Touch Controls - handles its own positioning */}
       <TouchControls
         mode={mode}
-        gameType={activeCabinet?.game as 'snake' | 'flappy' | null}
+        gameType={activeCabinet?.game as 'snake' | 'flappy' | 'pacman' | null}
         onExit={stopPlaying}
       />
 
@@ -156,6 +170,12 @@ export default function ArcadePage() {
       <FlappyBirdGame
         isActive={isFlappyActive}
         onCanvasReady={handleFlappyCanvasReady}
+        onScoreChange={setScore}
+        playSound={playSound}
+      />
+      <PacManGame
+        isActive={isPacManActive}
+        onCanvasReady={handlePacManCanvasReady}
         onScoreChange={setScore}
         playSound={playSound}
       />

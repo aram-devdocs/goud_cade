@@ -34,30 +34,30 @@ function getInitialCameraConfig(viewport: ViewportInfo) {
   return { position, fov };
 }
 
-// Define arcade cabinets
+// Define arcade cabinets - spread evenly across the room
 const CABINETS: CabinetInfo[] = [
   {
     id: 'snake-1',
-    position: { x: -3, y: 0, z: -5 },
-    screenPosition: { x: -3, y: 1.5, z: -4.57 },
+    position: { x: -4.5, y: 0, z: -5 },
+    screenPosition: { x: -4.5, y: 1.5, z: -4.57 },
     game: 'snake',
   },
   {
     id: 'flappy-1',
-    position: { x: 0, y: 0, z: -5 },
-    screenPosition: { x: 0, y: 1.5, z: -4.57 },
+    position: { x: -1.5, y: 0, z: -5 },
+    screenPosition: { x: -1.5, y: 1.5, z: -4.57 },
     game: 'flappy',
   },
   {
     id: 'pacman-1',
-    position: { x: 3, y: 0, z: -5 },
-    screenPosition: { x: 3, y: 1.5, z: -4.57 },
+    position: { x: 1.5, y: 0, z: -5 },
+    screenPosition: { x: 1.5, y: 1.5, z: -4.57 },
     game: 'pacman',
   },
   {
     id: 'soulknight-1',
-    position: { x: -3, y: 0, z: -5 },
-    screenPosition: { x: -3, y: 1.5, z: -4.57 },
+    position: { x: 4.5, y: 0, z: -5 },
+    screenPosition: { x: 4.5, y: 1.5, z: -4.57 },
     game: 'soulknight',
   },
 ];

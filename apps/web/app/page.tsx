@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useGameStore, useArcadeAudio } from '@repo/hooks';
 import { useInputStore, TouchControls, useTouchInput } from '@repo/input';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
-import { SnakeGame, FlappyBirdGame } from '@repo/games';
+import { SnakeGame, FlappyBirdGame, SoulKnightGame } from '@repo/games';
 
 // Dynamically import the 3D scene to avoid SSR issues with Three.js
 const Game = dynamic(
@@ -50,9 +50,14 @@ export default function ArcadePage() {
     setGameCanvases((prev) => ({ ...prev, 'flappy-1': canvas }));
   }, []);
 
+  const handleSoulKnightCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    setGameCanvases((prev) => ({ ...prev, 'soulknight-1': canvas }));
+  }, []);
+
   // Check if games are active
   const isSnakeActive = mode === 'playing' && activeCabinet?.id === 'snake-1';
   const isFlappyActive = mode === 'playing' && activeCabinet?.id === 'flappy-1';
+  const isSoulKnightActive = mode === 'playing' && activeCabinet?.id === 'soulknight-1';
 
   // Get control hints based on input source
   const getWalkingControls = () => {
@@ -82,14 +87,26 @@ export default function ArcadePage() {
 
   const getPlayingControls = () => {
     const isFlappy = activeCabinet?.game === 'flappy';
+    const isSoulKnight = activeCabinet?.game === 'soulknight';
 
     if (activeSource === 'gamepad' || hasGamepad) {
-      return isFlappy ? (
-        <>
-          <div>A Button - Flap</div>
-          <div>B - Exit Game</div>
-        </>
-      ) : (
+      if (isFlappy) {
+        return (
+          <>
+            <div>A Button - Flap</div>
+            <div>B - Exit Game</div>
+          </>
+        );
+      }
+      if (isSoulKnight) {
+        return (
+          <>
+            <div>D-Pad - Move  A - Attack</div>
+            <div>B - Roll  Back - Exit</div>
+          </>
+        );
+      }
+      return (
         <>
           <div>D-Pad/Stick - Control Snake</div>
           <div>B - Exit Game</div>
@@ -97,24 +114,46 @@ export default function ArcadePage() {
       );
     }
     if (isTouchDevice && (activeSource === 'touch' || activeSource === null)) {
-      return isFlappy ? (
-        <>
-          <div>Tap Screen - Flap</div>
-          <div>X Button - Exit</div>
-        </>
-      ) : (
+      if (isFlappy) {
+        return (
+          <>
+            <div>Tap Screen - Flap</div>
+            <div>X Button - Exit</div>
+          </>
+        );
+      }
+      if (isSoulKnight) {
+        return (
+          <>
+            <div>D-Pad - Move  A - Attack</div>
+            <div>B - Roll  X - Exit</div>
+          </>
+        );
+      }
+      return (
         <>
           <div>D-Pad - Control Snake</div>
           <div>X Button - Exit</div>
         </>
       );
     }
-    return isFlappy ? (
-      <>
-        <div>SPACE - Flap</div>
-        <div>ESC - Exit Game</div>
-      </>
-    ) : (
+    if (isFlappy) {
+      return (
+        <>
+          <div>SPACE - Flap</div>
+          <div>ESC - Exit Game</div>
+        </>
+      );
+    }
+    if (isSoulKnight) {
+      return (
+        <>
+          <div>Arrows - Move  Space - Attack</div>
+          <div>E - Roll  ESC - Exit</div>
+        </>
+      );
+    }
+    return (
       <>
         <div>Arrow Keys - Control Snake</div>
         <div>ESC - Exit Game</div>
@@ -142,7 +181,7 @@ export default function ArcadePage() {
       {/* Touch Controls - handles its own positioning */}
       <TouchControls
         mode={mode}
-        gameType={activeCabinet?.game as 'snake' | 'flappy' | null}
+        gameType={activeCabinet?.game as 'snake' | 'flappy' | 'soulknight' | null}
         onExit={stopPlaying}
       />
 
@@ -156,6 +195,12 @@ export default function ArcadePage() {
       <FlappyBirdGame
         isActive={isFlappyActive}
         onCanvasReady={handleFlappyCanvasReady}
+        onScoreChange={setScore}
+        playSound={playSound}
+      />
+      <SoulKnightGame
+        isActive={isSoulKnightActive}
+        onCanvasReady={handleSoulKnightCanvasReady}
         onScoreChange={setScore}
         playSound={playSound}
       />

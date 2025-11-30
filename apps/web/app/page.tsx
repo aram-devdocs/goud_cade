@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useGameStore, useArcadeAudio } from '@repo/hooks';
 import { useInputStore, TouchControls, useTouchInput } from '@repo/input';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
-import { SnakeGame, FlappyBirdGame, PacManGame, SoulKnightGame } from '@repo/games';
+import { SnakeGame, FlappyBirdGame, PacManGame, SoulKnightGame, TetrominoGame } from '@repo/games';
 
 // Dynamically import the 3D scene to avoid SSR issues with Three.js
 const Game = dynamic(
@@ -58,11 +58,16 @@ export default function ArcadePage() {
     setGameCanvases((prev) => ({ ...prev, 'soulknight-1': canvas }));
   }, []);
 
+  const handleTetrominoCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    setGameCanvases((prev) => ({ ...prev, 'tetromino-1': canvas }));
+  }, []);
+
   // Check if games are active
   const isSnakeActive = mode === 'playing' && activeCabinet?.id === 'snake-1';
   const isFlappyActive = mode === 'playing' && activeCabinet?.id === 'flappy-1';
   const isPacManActive = mode === 'playing' && activeCabinet?.id === 'pacman-1';
   const isSoulKnightActive = mode === 'playing' && activeCabinet?.id === 'soulknight-1';
+  const isTetrominoActive = mode === 'playing' && activeCabinet?.id === 'tetromino-1';
 
   // Get control hints based on input source
   const getWalkingControls = () => {
@@ -110,6 +115,15 @@ export default function ArcadePage() {
           </>
         );
       }
+      if (gameType === 'tetromino') {
+        return (
+          <>
+            <div>D-Pad - Move</div>
+            <div>A - Rotate</div>
+            <div>B - Exit Game</div>
+          </>
+        );
+      }
       return (
         <>
           <div>D-Pad/Stick - Move</div>
@@ -134,6 +148,15 @@ export default function ArcadePage() {
           </>
         );
       }
+      if (gameType === 'tetromino') {
+        return (
+          <>
+            <div>D-Pad - Move</div>
+            <div>A - Rotate</div>
+            <div>X - Exit</div>
+          </>
+        );
+      }
       return (
         <>
           <div>D-Pad - Move</div>
@@ -154,6 +177,15 @@ export default function ArcadePage() {
         <>
           <div>Arrows - Move  Space - Attack</div>
           <div>E - Roll  ESC - Exit</div>
+        </>
+      );
+    }
+    if (gameType === 'tetromino') {
+      return (
+        <>
+          <div>Arrow Keys - Move</div>
+          <div>Up/Space - Rotate</div>
+          <div>ESC - Exit Game</div>
         </>
       );
     }
@@ -185,7 +217,7 @@ export default function ArcadePage() {
       {/* Touch Controls - handles its own positioning */}
       <TouchControls
         mode={mode}
-        gameType={activeCabinet?.game as 'snake' | 'flappy' | 'pacman' | 'soulknight' | null}
+        gameType={activeCabinet?.game as 'snake' | 'flappy' | 'pacman' | 'soulknight' | 'tetromino' | null}
         onExit={stopPlaying}
       />
 
@@ -211,6 +243,12 @@ export default function ArcadePage() {
       <SoulKnightGame
         isActive={isSoulKnightActive}
         onCanvasReady={handleSoulKnightCanvasReady}
+        onScoreChange={setScore}
+        playSound={playSound}
+      />
+      <TetrominoGame
+        isActive={isTetrominoActive}
+        onCanvasReady={handleTetrominoCanvasReady}
         onScoreChange={setScore}
         playSound={playSound}
       />

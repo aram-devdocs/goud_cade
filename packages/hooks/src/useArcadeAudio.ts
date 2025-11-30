@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 
-type SoundType = 'eat' | 'gameOver' | 'move' | 'start' | 'flap' | 'score' | 'attack' | 'hit' | 'kill' | 'damage' | 'roll' | 'wave';
+type SoundType = 'eat' | 'gameOver' | 'move' | 'start' | 'flap' | 'score' | 'attack' | 'hit' | 'kill' | 'damage' | 'roll' | 'wave' | 'rotate' | 'lock' | 'lineClear' | 'levelUp' | 'hardDrop';
 
 interface AudioContextRef {
   context: AudioContext | null;
@@ -171,6 +171,7 @@ export function useArcadeAudio(enabled: boolean = true) {
         break;
       }
 
+      // Soul Knight sounds
       case 'attack': {
         // Sword slash sound - quick sweep
         const osc = context.createOscillator();
@@ -281,6 +282,115 @@ export function useArcadeAudio(enabled: boolean = true) {
           osc.start(now + i * 0.12);
           osc.stop(now + i * 0.12 + 0.2);
         });
+        break;
+      }
+
+      // Tetromino sounds
+      case 'rotate': {
+        // Quick ascending whoosh - piece rotation
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(500, now + 0.08);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.08);
+        break;
+      }
+
+      case 'lock': {
+        // Solid thud - piece locking in place
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.1);
+        break;
+      }
+
+      case 'lineClear': {
+        // Satisfying sweep - line cleared
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.2);
+
+        // Add sparkle
+        const osc2 = context.createOscillator();
+        const gain2 = context.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1000, now + 0.1);
+        osc2.frequency.exponentialRampToValueAtTime(1500, now + 0.2);
+        gain2.gain.setValueAtTime(0.1, now + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc2.connect(gain2);
+        gain2.connect(gainNode);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.2);
+        break;
+      }
+
+      case 'levelUp': {
+        // Triumphant fanfare - level up
+        const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+          const osc = context.createOscillator();
+          const gain = context.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0.2, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.15);
+          osc.connect(gain);
+          gain.connect(gainNode);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.15);
+        });
+        break;
+      }
+
+      case 'hardDrop': {
+        // Impact thud - hard drop
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(100, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.15);
+
+        // Add higher impact
+        const osc2 = context.createOscillator();
+        const gain2 = context.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(300, now);
+        osc2.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+        gain2.gain.setValueAtTime(0.15, now);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc2.connect(gain2);
+        gain2.connect(gainNode);
+        osc2.start(now);
+        osc2.stop(now + 0.1);
         break;
       }
     }

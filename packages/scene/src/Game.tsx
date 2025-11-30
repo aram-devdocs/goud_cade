@@ -34,31 +34,37 @@ function getInitialCameraConfig(viewport: ViewportInfo) {
   return { position, fov };
 }
 
-// Define arcade cabinets
+// Define arcade cabinets - evenly spaced at x: -6, -3, 0, 3, 6
 const CABINETS: CabinetInfo[] = [
   {
     id: 'snake-1',
-    position: { x: -3, y: 0, z: -5 },
-    screenPosition: { x: -3, y: 1.5, z: -4.57 },
+    position: { x: -6, y: 0, z: -5 },
+    screenPosition: { x: -6, y: 1.5, z: -4.57 },
     game: 'snake',
   },
   {
     id: 'flappy-1',
-    position: { x: 0, y: 0, z: -5 },
-    screenPosition: { x: 0, y: 1.5, z: -4.57 },
+    position: { x: -3, y: 0, z: -5 },
+    screenPosition: { x: -3, y: 1.5, z: -4.57 },
     game: 'flappy',
   },
   {
     id: 'pacman-1',
-    position: { x: 3, y: 0, z: -5 },
-    screenPosition: { x: 3, y: 1.5, z: -4.57 },
+    position: { x: 0, y: 0, z: -5 },
+    screenPosition: { x: 0, y: 1.5, z: -4.57 },
     game: 'pacman',
   },
   {
     id: 'soulknight-1',
-    position: { x: -3, y: 0, z: -5 },
-    screenPosition: { x: -3, y: 1.5, z: -4.57 },
+    position: { x: 3, y: 0, z: -5 },
+    screenPosition: { x: 3, y: 1.5, z: -4.57 },
     game: 'soulknight',
+  },
+  {
+    id: 'tetromino-1',
+    position: { x: 6, y: 0, z: -5 },
+    screenPosition: { x: 6, y: 1.5, z: -4.57 },
+    game: 'tetromino',
   },
 ];
 

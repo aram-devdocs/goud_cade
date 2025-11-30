@@ -9,3 +9,6 @@ export * from './pacman';
 
 // Soul Knight game
 export * from './soul-knight';
+
+// Tetromino (Tetris) game
+export * from './tetromino';

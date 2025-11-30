@@ -8,7 +8,7 @@ import { useInputStore } from '../stores/useInputStore';
 import { useShouldShowTouchControls } from '../hooks/useInput';
 
 type GameMode = 'walking' | 'transitioning' | 'playing';
-type GameType = 'snake' | 'flappy' | 'pacman' | null;
+type GameType = 'snake' | 'flappy' | 'pacman' | 'soulknight' | null;
 type Orientation = 'portrait' | 'landscape';
 type DeviceType = 'mobile' | 'tablet' | 'desktop';
 
@@ -298,18 +298,46 @@ export function TouchControls({
               zIndex: 1,
             }}
           >
-            <TouchButton
-              label="GO"
-              onPress={handleAction}
-              size={Math.round(55 * scale)}
-              variant="action"
-            />
-            <TouchButton
-              label="X"
-              onPress={handleExit}
-              size={Math.round(45 * scale)}
-              variant="exit"
-            />
+            {/* Soul Knight has A (attack) and B (roll) buttons */}
+            {gameType === 'soulknight' ? (
+              <>
+                <div style={{ display: 'flex', gap: Math.round(10 * scale) }}>
+                  <TouchButton
+                    label="B"
+                    onPress={handleInteract}
+                    size={Math.round(50 * scale)}
+                    variant="default"
+                  />
+                  <TouchButton
+                    label="A"
+                    onPress={handleAction}
+                    size={Math.round(55 * scale)}
+                    variant="action"
+                  />
+                </div>
+                <TouchButton
+                  label="X"
+                  onPress={handleExit}
+                  size={Math.round(40 * scale)}
+                  variant="exit"
+                />
+              </>
+            ) : (
+              <>
+                <TouchButton
+                  label="GO"
+                  onPress={handleAction}
+                  size={Math.round(55 * scale)}
+                  variant="action"
+                />
+                <TouchButton
+                  label="X"
+                  onPress={handleExit}
+                  size={Math.round(45 * scale)}
+                  variant="exit"
+                />
+              </>
+            )}
           </div>
         </>
       )}

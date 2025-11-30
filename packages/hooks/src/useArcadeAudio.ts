@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 
-type SoundType = 'eat' | 'gameOver' | 'move' | 'start' | 'flap' | 'score';
+type SoundType = 'eat' | 'gameOver' | 'move' | 'start' | 'flap' | 'score' | 'attack' | 'hit' | 'kill' | 'damage' | 'roll' | 'wave';
 
 interface AudioContextRef {
   context: AudioContext | null;
@@ -168,6 +168,119 @@ export function useArcadeAudio(enabled: boolean = true) {
         gain2.connect(gainNode);
         osc2.start(now);
         osc2.stop(now + 0.12);
+        break;
+      }
+
+      case 'attack': {
+        // Sword slash sound - quick sweep
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.15);
+        break;
+      }
+
+      case 'hit': {
+        // Impact sound - enemy hit
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.1);
+        break;
+      }
+
+      case 'kill': {
+        // Enemy death - satisfying destruction
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.2);
+
+        // Add crackle
+        const osc2 = context.createOscillator();
+        const gain2 = context.createGain();
+        osc2.type = 'square';
+        osc2.frequency.setValueAtTime(100, now);
+        gain2.gain.setValueAtTime(0.1, now);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc2.connect(gain2);
+        gain2.connect(gainNode);
+        osc2.start(now);
+        osc2.stop(now + 0.15);
+        break;
+      }
+
+      case 'damage': {
+        // Player hurt - harsh warning
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.setValueAtTime(150, now + 0.05);
+        osc.frequency.setValueAtTime(200, now + 0.1);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.15);
+        break;
+      }
+
+      case 'roll': {
+        // Dodge roll - whoosh
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain);
+        gain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.15);
+        break;
+      }
+
+      case 'wave': {
+        // New wave - triumphant fanfare
+        const notes = [392, 523, 659]; // G4, C5, E5
+        notes.forEach((freq, i) => {
+          const osc = context.createOscillator();
+          const gain = context.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(freq, now + i * 0.12);
+          gain.gain.setValueAtTime(0.2, now + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.12 + 0.2);
+          osc.connect(gain);
+          gain.connect(gainNode);
+          osc.start(now + i * 0.12);
+          osc.stop(now + i * 0.12 + 0.2);
+        });
         break;
       }
     }

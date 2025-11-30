@@ -1,19 +1,21 @@
 'use client';
 
-import { useGameStore } from '@repo/hooks';
+import { useGameStore, useFPS } from '@repo/hooks';
 import { useInputStore } from '@repo/input';
 
 interface GameOverlayProps {
   score?: number;
   onExit?: () => void;
+  showFPS?: boolean;
 }
 
-export function GameOverlay({ score = 0, onExit }: GameOverlayProps) {
+export function GameOverlay({ score = 0, onExit, showFPS = true }: GameOverlayProps) {
   const mode = useGameStore((state) => state.mode);
   const activeCabinet = useGameStore((state) => state.activeCabinet);
   const stopPlaying = useGameStore((state) => state.stopPlaying);
   const isTouchDevice = useInputStore((state) => state.isTouchDevice);
   const activeSource = useInputStore((state) => state.activeSource);
+  const fps = useFPS({ enabled: mode === 'playing' && showFPS });
 
   if (mode !== 'playing' || !activeCabinet) return null;
 
@@ -57,6 +59,11 @@ export function GameOverlay({ score = 0, onExit }: GameOverlayProps) {
       <div style={{ color: '#ffff00' }}>
         SCORE: {score.toString().padStart(6, '0')}
       </div>
+      {showFPS && (
+        <div style={{ color: '#00ff00' }}>
+          FPS: {fps.toString().padStart(3, ' ')}
+        </div>
+      )}
       <button
         onClick={handleExit}
         style={{

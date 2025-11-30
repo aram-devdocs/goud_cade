@@ -7,3 +7,5 @@ export type {
 
 export { useArcadeAudio } from './useArcadeAudio';
 
+export { useFPS } from './useFPS';
+

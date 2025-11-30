@@ -54,6 +54,12 @@ const CABINETS: CabinetInfo[] = [
     screenPosition: { x: 3, y: 1.5, z: -4.57 },
     game: 'pacman',
   },
+  {
+    id: 'soulknight-1',
+    position: { x: -3, y: 0, z: -5 },
+    screenPosition: { x: -3, y: 1.5, z: -4.57 },
+    game: 'soulknight',
+  },
 ];
 
 interface GameProps {

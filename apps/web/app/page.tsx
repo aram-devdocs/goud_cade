@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useGameStore, useArcadeAudio } from '@repo/hooks';
 import { useInputStore, TouchControls, useTouchInput } from '@repo/input';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
-import { SnakeGame, FlappyBirdGame, PacManGame } from '@repo/games';
+import { SnakeGame, FlappyBirdGame, PacManGame, SoulKnightGame } from '@repo/games';
 
 // Dynamically import the 3D scene to avoid SSR issues with Three.js
 const Game = dynamic(
@@ -54,10 +54,15 @@ export default function ArcadePage() {
     setGameCanvases((prev) => ({ ...prev, 'pacman-1': canvas }));
   }, []);
 
+  const handleSoulKnightCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    setGameCanvases((prev) => ({ ...prev, 'soulknight-1': canvas }));
+  }, []);
+
   // Check if games are active
   const isSnakeActive = mode === 'playing' && activeCabinet?.id === 'snake-1';
   const isFlappyActive = mode === 'playing' && activeCabinet?.id === 'flappy-1';
   const isPacManActive = mode === 'playing' && activeCabinet?.id === 'pacman-1';
+  const isSoulKnightActive = mode === 'playing' && activeCabinet?.id === 'soulknight-1';
 
   // Get control hints based on input source
   const getWalkingControls = () => {
@@ -97,6 +102,14 @@ export default function ArcadePage() {
           </>
         );
       }
+      if (gameType === 'soulknight') {
+        return (
+          <>
+            <div>D-Pad - Move  A - Attack</div>
+            <div>B - Roll  Back - Exit</div>
+          </>
+        );
+      }
       return (
         <>
           <div>D-Pad/Stick - Move</div>
@@ -113,6 +126,14 @@ export default function ArcadePage() {
           </>
         );
       }
+      if (gameType === 'soulknight') {
+        return (
+          <>
+            <div>D-Pad - Move  A - Attack</div>
+            <div>B - Roll  X - Exit</div>
+          </>
+        );
+      }
       return (
         <>
           <div>D-Pad - Move</div>
@@ -125,6 +146,14 @@ export default function ArcadePage() {
         <>
           <div>SPACE - Flap</div>
           <div>ESC - Exit Game</div>
+        </>
+      );
+    }
+    if (gameType === 'soulknight') {
+      return (
+        <>
+          <div>Arrows - Move  Space - Attack</div>
+          <div>E - Roll  ESC - Exit</div>
         </>
       );
     }
@@ -156,7 +185,7 @@ export default function ArcadePage() {
       {/* Touch Controls - handles its own positioning */}
       <TouchControls
         mode={mode}
-        gameType={activeCabinet?.game as 'snake' | 'flappy' | 'pacman' | null}
+        gameType={activeCabinet?.game as 'snake' | 'flappy' | 'pacman' | 'soulknight' | null}
         onExit={stopPlaying}
       />
 
@@ -176,6 +205,12 @@ export default function ArcadePage() {
       <PacManGame
         isActive={isPacManActive}
         onCanvasReady={handlePacManCanvasReady}
+        onScoreChange={setScore}
+        playSound={playSound}
+      />
+      <SoulKnightGame
+        isActive={isSoulKnightActive}
+        onCanvasReady={handleSoulKnightCanvasReady}
         onScoreChange={setScore}
         playSound={playSound}
       />

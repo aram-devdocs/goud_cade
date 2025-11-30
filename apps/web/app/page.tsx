@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useGameStore, useArcadeAudio } from '@repo/hooks';
 import { useInputStore, TouchControls, useTouchInput } from '@repo/input';
 import { InteractionPrompt, GameOverlay } from '@repo/ui';
-import { SnakeGame, FlappyBirdGame, SoulKnightGame } from '@repo/games';
+import { SnakeGame, FlappyBirdGame, PacManGame, SoulKnightGame } from '@repo/games';
 
 // Dynamically import the 3D scene to avoid SSR issues with Three.js
 const Game = dynamic(
@@ -50,6 +50,10 @@ export default function ArcadePage() {
     setGameCanvases((prev) => ({ ...prev, 'flappy-1': canvas }));
   }, []);
 
+  const handlePacManCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    setGameCanvases((prev) => ({ ...prev, 'pacman-1': canvas }));
+  }, []);
+
   const handleSoulKnightCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     setGameCanvases((prev) => ({ ...prev, 'soulknight-1': canvas }));
   }, []);
@@ -57,6 +61,7 @@ export default function ArcadePage() {
   // Check if games are active
   const isSnakeActive = mode === 'playing' && activeCabinet?.id === 'snake-1';
   const isFlappyActive = mode === 'playing' && activeCabinet?.id === 'flappy-1';
+  const isPacManActive = mode === 'playing' && activeCabinet?.id === 'pacman-1';
   const isSoulKnightActive = mode === 'playing' && activeCabinet?.id === 'soulknight-1';
 
   // Get control hints based on input source
@@ -86,11 +91,10 @@ export default function ArcadePage() {
   };
 
   const getPlayingControls = () => {
-    const isFlappy = activeCabinet?.game === 'flappy';
-    const isSoulKnight = activeCabinet?.game === 'soulknight';
+    const gameType = activeCabinet?.game;
 
     if (activeSource === 'gamepad' || hasGamepad) {
-      if (isFlappy) {
+      if (gameType === 'flappy') {
         return (
           <>
             <div>A Button - Flap</div>
@@ -98,7 +102,7 @@ export default function ArcadePage() {
           </>
         );
       }
-      if (isSoulKnight) {
+      if (gameType === 'soulknight') {
         return (
           <>
             <div>D-Pad - Move  A - Attack</div>
@@ -108,13 +112,13 @@ export default function ArcadePage() {
       }
       return (
         <>
-          <div>D-Pad/Stick - Control Snake</div>
+          <div>D-Pad/Stick - Move</div>
           <div>B - Exit Game</div>
         </>
       );
     }
     if (isTouchDevice && (activeSource === 'touch' || activeSource === null)) {
-      if (isFlappy) {
+      if (gameType === 'flappy') {
         return (
           <>
             <div>Tap Screen - Flap</div>
@@ -122,7 +126,7 @@ export default function ArcadePage() {
           </>
         );
       }
-      if (isSoulKnight) {
+      if (gameType === 'soulknight') {
         return (
           <>
             <div>D-Pad - Move  A - Attack</div>
@@ -132,12 +136,12 @@ export default function ArcadePage() {
       }
       return (
         <>
-          <div>D-Pad - Control Snake</div>
+          <div>D-Pad - Move</div>
           <div>X Button - Exit</div>
         </>
       );
     }
-    if (isFlappy) {
+    if (gameType === 'flappy') {
       return (
         <>
           <div>SPACE - Flap</div>
@@ -145,7 +149,7 @@ export default function ArcadePage() {
         </>
       );
     }
-    if (isSoulKnight) {
+    if (gameType === 'soulknight') {
       return (
         <>
           <div>Arrows - Move  Space - Attack</div>
@@ -155,7 +159,7 @@ export default function ArcadePage() {
     }
     return (
       <>
-        <div>Arrow Keys - Control Snake</div>
+        <div>Arrow Keys - Move</div>
         <div>ESC - Exit Game</div>
       </>
     );
@@ -181,7 +185,7 @@ export default function ArcadePage() {
       {/* Touch Controls - handles its own positioning */}
       <TouchControls
         mode={mode}
-        gameType={activeCabinet?.game as 'snake' | 'flappy' | 'soulknight' | null}
+        gameType={activeCabinet?.game as 'snake' | 'flappy' | 'pacman' | 'soulknight' | null}
         onExit={stopPlaying}
       />
 
@@ -195,6 +199,12 @@ export default function ArcadePage() {
       <FlappyBirdGame
         isActive={isFlappyActive}
         onCanvasReady={handleFlappyCanvasReady}
+        onScoreChange={setScore}
+        playSound={playSound}
+      />
+      <PacManGame
+        isActive={isPacManActive}
+        onCanvasReady={handlePacManCanvasReady}
         onScoreChange={setScore}
         playSound={playSound}
       />

@@ -8,7 +8,7 @@ import { useInputStore } from '../stores/useInputStore';
 import { useShouldShowTouchControls } from '../hooks/useInput';
 
 type GameMode = 'walking' | 'transitioning' | 'playing';
-type GameType = 'snake' | 'flappy' | 'soulknight' | null;
+type GameType = 'snake' | 'flappy' | 'pacman' | 'soulknight' | null;
 type Orientation = 'portrait' | 'landscape';
 type DeviceType = 'mobile' | 'tablet' | 'desktop';
 

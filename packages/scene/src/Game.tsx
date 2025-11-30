@@ -1,13 +1,38 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGameStore, type CabinetInfo } from '@repo/hooks';
 import { useInput, useInputStore } from '@repo/input';
+import { useViewport, type ViewportInfo } from '@repo/ui';
 import { Room } from './Room';
 import { Player } from './Player';
 import { CameraController } from './CameraController';
 import { ArcadeCabinet } from './ArcadeCabinet';
+
+// Get responsive initial camera config
+function getInitialCameraConfig(viewport: ViewportInfo) {
+  const { deviceType, orientation } = viewport;
+
+  // Default for desktop/landscape
+  let position: [number, number, number] = [0, 5, 10];
+  let fov = 60;
+
+  if (orientation === 'portrait') {
+    if (deviceType === 'mobile') {
+      position = [1.5, 6, 14];
+      fov = 70;
+    } else if (deviceType === 'tablet') {
+      position = [1.5, 5.5, 12];
+      fov = 65;
+    }
+  } else if (deviceType === 'mobile') {
+    position = [1.5, 4.5, 11];
+    fov = 65;
+  }
+
+  return { position, fov };
+}
 
 // Define arcade cabinets
 const CABINETS: CabinetInfo[] = [
@@ -53,6 +78,8 @@ function InputHandler() {
 
 export function Game({ gameCanvases = {} }: GameProps) {
   const activeCabinet = useGameStore((state) => state.activeCabinet);
+  const viewport = useViewport();
+  const cameraConfig = useMemo(() => getInitialCameraConfig(viewport), [viewport]);
 
   return (
     <>
@@ -62,8 +89,8 @@ export function Game({ gameCanvases = {} }: GameProps) {
       <Canvas
         shadows
         camera={{
-          position: [0, 5, 10],
-          fov: 60,
+          position: cameraConfig.position,
+          fov: cameraConfig.fov,
           near: 0.1,
           far: 100,
         }}

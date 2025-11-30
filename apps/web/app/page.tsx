@@ -127,14 +127,19 @@ export default function ArcadePage() {
 
   return (
     <main className="game-container w-full h-screen relative">
-      {/* 3D Scene */}
-      <Game gameCanvases={gameCanvases} />
+      {/* 3D Scene - uses CSS variable for height in portrait mode */}
+      <div
+        className="w-full h-game-area portrait:h-game-area landscape:h-screen"
+        style={{ paddingTop: 'var(--safe-area-top)' }}
+      >
+        <Game gameCanvases={gameCanvases} />
+      </div>
 
       {/* UI Overlays */}
       <InteractionPrompt />
       <GameOverlay score={score} />
 
-      {/* Touch Controls */}
+      {/* Touch Controls - handles its own positioning */}
       <TouchControls
         mode={mode}
         gameType={activeCabinet?.game as 'snake' | 'flappy' | null}
@@ -156,9 +161,10 @@ export default function ArcadePage() {
       />
 
       {/* Controls hint - only show on non-touch or when using keyboard/gamepad */}
+      {/* Positioned above control area in portrait mode */}
       {mode === 'walking' && showTextHints && (
         <div
-          className="fixed bottom-4 left-4 text-xs font-arcade text-white/50 space-y-1"
+          className="fixed left-4 text-xs font-arcade text-white/50 space-y-1 portrait:bottom-[calc(var(--control-area-height)+1rem)] landscape:bottom-4"
           style={{ fontFamily: '"Press Start 2P", monospace' }}
         >
           {getWalkingControls()}
@@ -167,7 +173,7 @@ export default function ArcadePage() {
 
       {mode === 'playing' && showTextHints && (
         <div
-          className="fixed bottom-4 left-4 text-xs text-white/50 space-y-1"
+          className="fixed left-4 text-xs text-white/50 space-y-1 portrait:bottom-[calc(var(--control-area-height)+1rem)] landscape:bottom-4"
           style={{ fontFamily: '"Press Start 2P", monospace' }}
         >
           {getPlayingControls()}

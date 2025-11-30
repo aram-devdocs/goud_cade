@@ -20,6 +20,7 @@
     "@react-three/fiber": "^8.15.0",
     "@repo/hooks": "workspace:*",
     "@repo/input": "workspace:*",
+    "@repo/ui": "workspace:*",
     "three": "^0.160.0"
   },
   "devDependencies": {

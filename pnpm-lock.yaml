@@ -257,6 +257,9 @@ importers:
       '@repo/input':
         specifier: workspace:*
         version: link:../input
+      '@repo/ui':
+        specifier: workspace:*
+        version: link:../ui
       three:
         specifier: ^0.160.0
         version: 0.160.1

@@ -10,6 +10,29 @@
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
   --safe-area-top: env(safe-area-inset-top, 0px);
+
+  /* Responsive layout variables - default for landscape/desktop */
+  --control-area-height: 0px;
+  --game-area-height: 100vh;
+  --game-area-height-with-safe: calc(100vh - var(--safe-area-top) - var(--safe-area-bottom));
+}
+
+/* Portrait mode on mobile phones */
+@media (max-aspect-ratio: 1/1) and (max-width: 640px) {
+  :root {
+    --control-area-height: 35vh;
+    --game-area-height: 65vh;
+    --game-area-height-with-safe: calc(65vh - var(--safe-area-top));
+  }
+}
+
+/* Portrait mode on tablets */
+@media (max-aspect-ratio: 1/1) and (min-width: 641px) and (max-width: 1024px) {
+  :root {
+    --control-area-height: 30vh;
+    --game-area-height: 70vh;
+    --game-area-height-with-safe: calc(70vh - var(--safe-area-top));
+  }
 }
 
 * {
